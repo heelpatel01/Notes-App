@@ -1,71 +1,89 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Add this import statement
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import PasswordInput from "../../components/Navbar/Input/PasswordInput";
 import { validateEmail } from "../../utils/helper";
+import axiosInstance from "../../utils/axiosInstance";
 
 function Login() {
- const [email, setEmail] = useState("");
- const [password, setPassword] = useState("");
- const [error, setError] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
 
- const handleLogin = async (e) => {
-  e.preventDefault();
+  const navigate = useNavigate();
 
-  if (!validateEmail(email)) {
-   setError("Please enter a valid email address.");
-   return;
-  }
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  if (!password) {
-   setError("Please enter the password.");
-   return;
-  }
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
 
-  setError("");
+    if (!password) {
+      setError("Please enter the password.");
+      return;
+    }
 
-  //  Login API Call
- };
+    setError("");
 
- return (
-  <>
-   <Navbar />
-   <div className="flex items-center justify-center mt-28">
-    <div className="w-96 border rounded bg-white px-7 py-10">
-     <form onSubmit={handleLogin}>
-      <h4 className="text-2xl mb-7">Login</h4>
-      <input
-       type="text"
-       placeholder="Email"
-       className="input-box"
-       value={email}
-       onChange={(e) => {
-        setEmail(e.target.value);
-       }}
-      />
+    try {
+      const response = await axiosInstance.post("/login", {
+        email: email,
+        password: password,
+      });
 
-      <PasswordInput
-       value={password}
-       onChange={(e) => setPassword(e.target.value)}
-      />
+      if (response.data && response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    }
+  };
 
-      {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
+  return (
+    <>
+      <Navbar />
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-green-400">
+        <div className="w-96 bg-gray-800 border border-green-600 rounded-lg px-7 py-10 shadow-lg">
+          <form onSubmit={handleLogin}>
+            <h4 className="text-3xl mb-7 font-mono">Login</h4>
+            <input
+              type="text"
+              placeholder="Email"
+              className="w-full bg-gray-700 border border-green-500 text-green-400 placeholder-green-300 rounded-md px-4 py-2 mb-4"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-      <button type="submit" className="btn-primary">
-       Login
-      </button>
+            <PasswordInput
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-gray-700 border border-green-500 text-green-400 placeholder-green-300 rounded-md px-4 py-2 mb-4"
+            />
 
-      <p className="text-sm text-center mt-4">
-       Not regestered yet?{" "}
-       <Link to="/signup" className="font-medium text-primary underline">
-        Create an account
-       </Link>
-      </p>
-     </form>
-    </div>
-   </div>
-  </>
- );
+            {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+
+            <button type="submit" className="w-full bg-green-600 hover:bg-green-500 text-black font-bold py-2 px-4 rounded transition-transform transform hover:scale-105">
+              Login
+            </button>
+
+            <p className="text-sm text-center mt-4 text-gray-400">
+              Not registered yet?{" "}
+              <Link to="/signup" className="font-medium text-green-400 underline">
+                Create an account
+              </Link>
+            </p>
+          </form>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default Login;
