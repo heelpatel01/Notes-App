@@ -14,9 +14,6 @@ function EmptyCard() {
       <p className="text-gray-500 mb-4">
         You haven't created any notes yet. Click the button below to add your first note.
       </p>
-      <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400">
-        Add Note
-      </button>
     </div>
   );
 }
