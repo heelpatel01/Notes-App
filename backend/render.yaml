@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: notes-app
+    env: node
+    plan: free
+    buildCommand: 'npm install'
+    startCommand: 'npm start'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ACCESS_TOKEN_SECRET
+        value: your_secret_key
+      - key: PORT
+        value: 8000
+      - key: DB_CONNECTION_STRING
+        value: your_connection_string

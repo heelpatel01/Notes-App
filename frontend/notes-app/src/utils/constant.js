@@ -1,1 +1,1 @@
-export const BASE_URL = "https://notes-app-backend-phi-smoky.vercel.app";
+export const BASE_URL = "https://backend-notes-app-q5kl.onrender.com/";
