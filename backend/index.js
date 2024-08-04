@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(cors({ origin: "*" }));
 
 app.get("/", (req, res) => {
- res.json({ data: "Hanuman" });
+ res.json("Hanuman");
 });
 
 app.post("/create-user", async (req, res) => {
@@ -108,55 +108,58 @@ app.post("/create-user", async (req, res) => {
 //  return res.status(404).json({ error: true, message: "Invalid Credentials !" });
 // });
 
-
 //login -2
 
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+ const { email, password } = req.body;
 
-  if (!email) {
-    return res.status(400).json({
-      error: true,
-      message: "Email is required to login.",
-    });
+ if (!email) {
+  return res.status(400).json({
+   error: true,
+   message: "Email is required to login.",
+  });
+ }
+
+ if (!password) {
+  return res.status(400).json({
+   error: true,
+   message: "Please enter password.",
+  });
+ }
+
+ try {
+  const userInfo = await User.findOne({ email });
+
+  if (!userInfo) {
+   return res
+    .status(404)
+    .json({ error: true, message: "Invalid Credentials!" });
   }
 
-  if (!password) {
-    return res.status(400).json({
-      error: true,
-      message: "Please enter password.",
-    });
+  if (userInfo.email === email && password === userInfo.password) {
+   const user = { user: userInfo };
+   const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "36000m",
+   });
+
+   return res.json({
+    error: false,
+    message: "User Login Successfully!",
+    email,
+    accessToken,
+   });
+  } else {
+   return res
+    .status(404)
+    .json({ error: true, message: "Invalid Credentials!" });
   }
-
-  try {
-    const userInfo = await User.findOne({ email });
-
-    if (!userInfo) {
-      return res.status(404).json({ error: true, message: "Invalid Credentials!" });
-    }
-
-    if (userInfo.email === email && password === userInfo.password) {
-      const user = { user: userInfo };
-      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "36000m",
-      });
-
-      return res.json({
-        error: false,
-        message: "User Login Successfully!",
-        email,
-        accessToken,
-      });
-    } else {
-      return res.status(404).json({ error: true, message: "Invalid Credentials!" });
-    }
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    return res.status(500).json({
-      error: true,
-      message: "Internal Server Error!",
-    });
-  }
+ } catch (error) {
+  console.error(error); // Log the error for debugging
+  return res.status(500).json({
+   error: true,
+   message: "Internal Server Error!",
+  });
+ }
 });
 
 //Get user info
@@ -226,7 +229,7 @@ app.post("/add-note", authenticationToken, async (req, res) => {
    error: false,
    message: "Note added successfully",
    user: user._id,
-   note:note
+   note: note,
   });
  } catch (error) {
   console.log(error);
@@ -268,7 +271,7 @@ app.put("/edit-note/:id", authenticationToken, async (req, res) => {
   return res.status(200).json({
    error: false,
    message: "Notes Updated Successfully!",
-   note:note
+   note: note,
   });
  } catch (error) {
   console.log(error);
